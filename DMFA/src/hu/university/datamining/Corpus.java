@@ -3,10 +3,7 @@ package hu.university.datamining;
 import hu.university.utilities.MatrixEx;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Corpus
 {
@@ -32,6 +29,42 @@ public class Corpus
     {
         initializeFromFile(file);
     }
+
+    public int GetWordOccurence(String word)
+    {
+        if(!wordMap.containsKey(word))
+            return 0;
+
+        return (int)termDocumentMatrix.GetRowSum(wordMap.get(word));
+    }
+
+    public int GetWordOccurenceInDocument(String word, int articleIndex)
+    {
+        if(!wordMap.containsKey(word))
+            return 0;
+
+        return (int)termDocumentMatrix.GetValue(wordMap.get(word), articleIndex);
+    }
+
+    public double GetWordOccurenceProbability(String word, int articleIndex)
+    {
+        if(!wordMap.containsKey(word))
+            return 0.0;
+        int wordIdx = wordMap.get(word);
+        return termDocumentMatrix.GetValue(wordIdx, articleIndex) / termDocumentMatrix.GetColumnSum(articleIndex);
+    }
+
+    public Set<String> GetWordSet()
+    {
+        return wordMap.keySet();
+    }
+
+    public int NumberOfArticles()
+    {
+        return articles.size();
+    }
+
+
 
     private void initializeFromArticles(List<Article> articles)
     {
@@ -63,8 +96,10 @@ public class Corpus
                 String line = br.readLine();
                 if(line == null)
                     break;
-                line.replaceAll("[^A-Za-z,\" ]","");
-                String[] temp = line.split("\",\"");
+
+                line = line.toLowerCase().replaceAll("[^a-z\" ]", "");
+                String[] temp = line.split("\"\"");
+                temp[1] = temp[1].replaceAll("\"","").replaceAll("[ ]+"," ");
                 Article article = new Article(temp[0], temp[1]);
                 articles.add(article);
             }
