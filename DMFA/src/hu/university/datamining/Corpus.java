@@ -64,6 +64,11 @@ public class Corpus
         return articles.size();
     }
 
+    public List<Article> GetArticles()
+    {
+        return articles;
+    }
+
 
 
     private void initializeFromArticles(List<Article> articles)

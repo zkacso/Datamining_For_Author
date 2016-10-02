@@ -15,17 +15,11 @@ public class Matrix
 
     public void SetValue(int row, int column, double value)
     {
-        if(row >= rowCount || column >= columnCount)
-            throw new IndexOutOfBoundsException("Matrix row/column index is out of range.");
-
         values[row][column] = value;
     }
 
     public double GetValue(int row, int column)
     {
-        if(row >= rowCount || column >= columnCount)
-            throw new IndexOutOfBoundsException("Matrix row/column index is out of range.");
-
         return values[row][column];
     }
 }

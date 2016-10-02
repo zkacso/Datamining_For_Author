@@ -55,26 +55,17 @@ public class MatrixEx extends Matrix implements Cloneable
 
     public double GetRowSum(int rowNumber)
     {
-        if(rowNumber >= rowCount)
-            throw new IndexOutOfBoundsException();
-
         return rowSums[rowNumber];
     }
 
     public double GetColumnSum(int columnNumber)
     {
-        if(columnNumber >= columnCount)
-            throw new IndexOutOfBoundsException();
-
         return columnSums[columnNumber];
     }
 
     // Not threadSafe
     public void Increment(int rowNumber, int columnNumber)
     {
-        if(columnNumber >= columnCount || rowNumber >= rowCount)
-            throw new IndexOutOfBoundsException();
-
         double val = GetValue(rowNumber,columnNumber);
         columnSums[columnNumber]++;
         rowSums[rowNumber]++;
