@@ -22,4 +22,14 @@ public class Matrix
     {
         return values[row][column];
     }
+
+    public Matrix clone()
+    {
+        Matrix clone = new Matrix(rowCount,columnCount);
+        for(int i = 0; i < rowCount; i++)
+            for(int j = 0; j <columnCount; j++)
+                clone.SetValue(i,j,values[i][j]);
+
+        return clone;
+    }
 }

@@ -1,0 +1,96 @@
+<html>
+<head>
+<title>test</title>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script>
+    $(document).ready(function(){
+        function loadArticles(pageNum)
+        {            
+            var url = "https://api.nytimes.com/svc/search/v2/articlesearch.json";
+            url += '?' + $.param({
+              'begin_date': "20150101",
+              'end_date': "20161010",
+              'fl': "web_url,byline",
+              'page': pageNum
+            });
+            $.ajax({
+              url: url,
+              method: 'GET',
+            }).done(function(result) {
+                for(var i = 0; i < 10; i++)
+                {
+                    
+                    var url = result.response.docs[i].web_url;
+                    var person = result.response.docs[i].byline.person[0];
+                    if(typeof person != "undefined")
+                    {
+                        if(!url.startsWith("http://www.nytimes.com/video"))
+                            getSite(url, person);                        
+                    }
+                    
+                }
+            }).fail(function(err) {
+            });
+        }
+        function callback(json)
+        {
+            alert('asd');
+        }
+        function wait(ms){
+            var start = new Date().getTime();
+            var end = start;
+            while(end < start + ms) {
+                end = new Date().getTime();
+            }
+        }
+        
+        function getSite(webUrl, person)
+        {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET',webUrl,true);
+            xhr.onload = function()
+            {
+                var text = xhr.responseText;
+            };
+            xhr.onerror = function()
+            {
+                alert("keksdf");
+            };
+            xhr.send();
+            $.ajax({
+                url: webUrl,
+                method: 'GET',
+                crossDomain: true,
+                xhrFields: {
+                    withCredentials: true
+                },
+                }).done(function(site)
+                    {
+                        var asd = site.find(".story-content");
+                        $("#articles").append(person.firstname + "_" + person.lastname + "<br />");
+                    })
+                  .fail(function(error)
+                  {
+                    alert(JSON.stringify(error));
+                  });
+        }
+        
+        $( "#button" ).on( "click", function() {
+            for(var pageNum = 50; pageNum < 60; pageNum++)
+            {
+                loadArticles(pageNum);
+                wait(5000);
+            }
+        });
+        
+        
+    });
+    </script>
+    
+</head>
+<body>
+    
+    <div id="articles"></div>
+    <button id="button">Download things</button>
+</body>
+</html>

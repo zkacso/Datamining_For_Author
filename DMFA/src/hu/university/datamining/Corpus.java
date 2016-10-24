@@ -14,62 +14,17 @@ public class Corpus
      */
     private HashMap<String, Integer> wordMap = new HashMap<String, Integer>();
     private MatrixEx termDocumentMatrix;
+    private DimensionReducer dr;
+    private Stemmer stemmer;
 
-    public Corpus(List<Article> articles)
-    {
-        initializeFromArticles(articles);
-    }
+    //region Constructors and initialization
 
-    public Corpus(String filePath) throws FileNotFoundException
+    public Corpus(String filePath, Stemmer st, DimensionReducer dr) throws FileNotFoundException
     {
+        this.stemmer = st;
+        this.dr = dr;
         initializeFromFile(filePath);
     }
-
-    public Corpus(File file) throws FileNotFoundException
-    {
-        initializeFromFile(file);
-    }
-
-    public int GetWordOccurence(String word)
-    {
-        if(!wordMap.containsKey(word))
-            return 0;
-
-        return (int)termDocumentMatrix.GetRowSum(wordMap.get(word));
-    }
-
-    public int GetWordOccurenceInDocument(String word, int articleIndex)
-    {
-        if(!wordMap.containsKey(word))
-            return 0;
-
-        return (int)termDocumentMatrix.GetValue(wordMap.get(word), articleIndex);
-    }
-
-    public double GetWordOccurenceProbability(String word, int articleIndex)
-    {
-        if(!wordMap.containsKey(word))
-            return 0.0;
-        int wordIdx = wordMap.get(word);
-        return termDocumentMatrix.GetValue(wordIdx, articleIndex) / termDocumentMatrix.GetColumnSum(articleIndex);
-    }
-
-    public Set<String> GetWordSet()
-    {
-        return wordMap.keySet();
-    }
-
-    public int NumberOfArticles()
-    {
-        return articles.size();
-    }
-
-    public List<Article> GetArticles()
-    {
-        return articles;
-    }
-
-
 
     private void initializeFromArticles(List<Article> articles)
     {
@@ -103,9 +58,18 @@ public class Corpus
                     break;
 
                 line = line.toLowerCase().replaceAll("[^a-z\" ]", "");
-                String[] temp = line.split("\"\"");
-                temp[1] = temp[1].replaceAll("\"","").replaceAll("[ ]+"," ");
-                Article article = new Article(temp[0], temp[1]);
+                String[] articleInfos = line.split("\"\"");
+                String articleContent = articleInfos[4].replaceAll("\"","").replaceAll("[ ]+", " ");
+
+                String[] words = articleContent.split(" ");
+                words = dr.filterStopWords(words);
+                StringBuilder sb = new StringBuilder();
+                for(String word : words)
+                {
+                    sb.append(stemmer.stem(word)).append(' ');
+                }
+
+                Article article = new Article(articleInfos[5], sb.toString());
                 articles.add(article);
             }
         }
@@ -155,5 +119,98 @@ public class Corpus
             }
         }
     }
+    //endregion
+
+
+
+
+
+    public int GetWordOccurrence(String word)
+    {
+        if(!wordMap.containsKey(word))
+            return 0;
+
+        return (int)termDocumentMatrix.GetRowSum(wordMap.get(word));
+    }
+
+    public int GetWordOccurrence(int wordIndex)
+    {
+        return (int)termDocumentMatrix.GetRowSum(wordIndex);
+    }
+
+    public int GetWordOccurrenceInDocument(String word, int articleIndex)
+    {
+        if(!wordMap.containsKey(word))
+            return 0;
+
+        return (int)termDocumentMatrix.GetValue(wordMap.get(word), articleIndex);
+    }
+
+    public int GetWordOccurrenceInDocument(int wordIndex, int articleIndex)
+    {
+        return (int)termDocumentMatrix.GetValue(wordIndex,articleIndex);
+    }
+
+
+    public double GetWordOccurrenceProbability(String word, int articleIndex)
+    {
+        if(!wordMap.containsKey(word))
+            return 0.0;
+        int wordIdx = wordMap.get(word);
+        return termDocumentMatrix.GetValue(wordIdx, articleIndex) / termDocumentMatrix.GetColumnSum(articleIndex);
+    }
+
+    public Set<String> GetWordSet()
+    {
+        return wordMap.keySet();
+    }
+
+    public int NumberOfArticles()
+    {
+        return articles.size();
+    }
+
+    public int NumberOfWords() { return wordMap.size(); }
+
+    public List<Article> GetArticles()
+    {
+        return articles;
+    }
+
+    public Article GetArticle(int index)
+    {
+        return articles.get(index);
+    }
+
+    public Article GetArticleById(int ID)
+    {
+        for(Article a : articles)
+        {
+            if(a.ID == ID)
+                return a;
+        }
+        throw new IndexOutOfBoundsException();
+    }
+
+    public int GetArticleIndex(Article a)
+    {
+        for(int i = 0; i < articles.size(); i++)
+        {
+            if(articles.get(i).ID == a.ID)
+                return i;
+        }
+        throw new IndexOutOfBoundsException();
+    }
+
+    public String GetWordOfArticle(int articleIndex, int wordIndex)
+    {
+        return articles.get(articleIndex).TextAsWords[wordIndex];
+    }
+
+    public int GetArticleLength(int articleIndex)
+    {
+        return articles.get(articleIndex).TextAsWords.length;
+    }
+
 
 }
