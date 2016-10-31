@@ -23,6 +23,11 @@ public class Matrix
         return values[row][column];
     }
 
+    public void Increment(int rowNumber, int columnNumber)
+    {
+        values[rowNumber][columnNumber]++;
+    }
+
     public Matrix clone()
     {
         Matrix clone = new Matrix(rowCount,columnCount);

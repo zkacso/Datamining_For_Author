@@ -1,5 +1,6 @@
 package hu.university.datamining;
 
+import hu.university.utilities.Matrix;
 import hu.university.utilities.MatrixEx;
 
 import java.io.*;
@@ -13,7 +14,7 @@ public class Corpus
      * Value = the index of the word in the term-document matrix.
      */
     private HashMap<String, Integer> wordMap = new HashMap<String, Integer>();
-    private MatrixEx termDocumentMatrix;
+    private Matrix termDocumentMatrix;
     private DimensionReducer dr;
     private Stemmer stemmer;
 
@@ -72,6 +73,7 @@ public class Corpus
                 Article article = new Article(articleInfos[5], sb.toString());
                 articles.add(article);
             }
+            articles = dr.reduceWordDimension(articles);
         }
         catch (FileNotFoundException e)
         {
@@ -108,7 +110,7 @@ public class Corpus
 
     private  void initializeTermDocumentMatrix(List<Article> articles, Map<String, Integer> wordMap)
     {
-        termDocumentMatrix = new MatrixEx(wordMap.size(), articles.size());
+        termDocumentMatrix = new Matrix(wordMap.size(), articles.size());
         for(int i = 0; i < articles.size(); i++)
         {
             Article article = articles.get(i);
@@ -125,44 +127,19 @@ public class Corpus
 
 
 
-    public int GetWordOccurrence(String word)
-    {
-        if(!wordMap.containsKey(word))
-            return 0;
-
-        return (int)termDocumentMatrix.GetRowSum(wordMap.get(word));
-    }
-
-    public int GetWordOccurrence(int wordIndex)
-    {
-        return (int)termDocumentMatrix.GetRowSum(wordIndex);
-    }
-
-    public int GetWordOccurrenceInDocument(String word, int articleIndex)
-    {
-        if(!wordMap.containsKey(word))
-            return 0;
-
-        return (int)termDocumentMatrix.GetValue(wordMap.get(word), articleIndex);
-    }
-
     public int GetWordOccurrenceInDocument(int wordIndex, int articleIndex)
     {
         return (int)termDocumentMatrix.GetValue(wordIndex,articleIndex);
     }
 
-
-    public double GetWordOccurrenceProbability(String word, int articleIndex)
-    {
-        if(!wordMap.containsKey(word))
-            return 0.0;
-        int wordIdx = wordMap.get(word);
-        return termDocumentMatrix.GetValue(wordIdx, articleIndex) / termDocumentMatrix.GetColumnSum(articleIndex);
-    }
-
     public Set<String> GetWordSet()
     {
         return wordMap.keySet();
+    }
+
+    public int GetWordIndex(String word)
+    {
+        return wordMap.get(word);
     }
 
     public int NumberOfArticles()

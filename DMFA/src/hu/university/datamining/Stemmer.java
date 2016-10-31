@@ -2,7 +2,8 @@ package hu.university.datamining;
 
 /**
  Created by Zoltán on 2016. 10. 24.. */
-public interface Stemmer
+public abstract class Stemmer
 {
-    public String stem(String word);
+    public abstract String stem(String word);
+    public static Stemmer Default = DefaultStemmer.Instance;
 }

@@ -4,7 +4,7 @@ import java.util.List;
 
 /**
  Created by Zoltán on 2016. 10. 24.. */
-public class DefaultDimensionReducer implements DimensionReducer
+public class DefaultDimensionReducer extends DimensionReducer
 {
  private DefaultDimensionReducer(){}
  public final static DefaultDimensionReducer Instance = new DefaultDimensionReducer();
@@ -16,8 +16,9 @@ public class DefaultDimensionReducer implements DimensionReducer
  }
 
  @Override
- public List<String> filterStopWords(List<String> words)
+ public List<Article> reduceWordDimension(List<Article> articles)
  {
-  return words;
+  return articles;
  }
+
 }

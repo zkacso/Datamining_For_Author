@@ -4,8 +4,10 @@ import java.util.List;
 
 /**
  Created by Zoltán on 2016. 10. 24.. */
-public interface DimensionReducer
+public abstract class DimensionReducer
 {
-    String[] filterStopWords(String[] words);
-    List<String> filterStopWords(List<String> words);
+    public abstract String[] filterStopWords(String[] words);
+    public abstract List<Article> reduceWordDimension(List<Article> articles);
+
+    public static DimensionReducer Default = DefaultDimensionReducer.Instance;
 }

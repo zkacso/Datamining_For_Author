@@ -4,7 +4,7 @@ import org.tartarus.snowball.ext.englishStemmer;
 
 /**
  Created by Zoltán on 2016. 10. 24.. */
-public class SnowballStemmer implements Stemmer
+public class SnowballStemmer extends Stemmer
 {
     private org.tartarus.snowball.SnowballStemmer stemmer;
     public SnowballStemmer() throws ClassNotFoundException, IllegalAccessException, InstantiationException
