@@ -23,6 +23,16 @@ public class Matrix
         return values[row][column];
     }
 
+    public int GetRowSize()
+    {
+        return rowCount;
+    }
+
+    public int GetColumnSize()
+    {
+        return columnCount;
+    }
+
     public void Increment(int rowNumber, int columnNumber)
     {
         values[rowNumber][columnNumber]++;

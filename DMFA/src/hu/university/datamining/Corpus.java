@@ -70,10 +70,10 @@ public class Corpus
                     sb.append(stemmer.stem(word)).append(' ');
                 }
 
-                Article article = new Article(articleInfos[5], sb.toString());
+                Article article = new Article(articleInfos[5].replace("\"",""), sb.toString());
                 articles.add(article);
             }
-            articles = dr.reduceWordDimension(articles);
+            this.articles = dr.reduceWordDimension(articles);
         }
         catch (FileNotFoundException e)
         {

@@ -72,6 +72,31 @@ public class ExpectationMaximization
 
     }
 
+    public Matrix GetTermTopicMatrix()
+    {
+        return termTopicMatrix;
+    }
+
+    public Map<String,Integer> GetAuthorMapping()
+    {
+        return authorIds;
+    }
+
+    public int[] GetDocumentToAuthorAllocation()
+    {
+        return Y;
+    }
+
+    public List<Article> GetArticles()
+    {
+        return corpus.GetArticles();
+    }
+
+    public double[] GetTopicModel()
+    {
+        return topicModel;
+    }
+
     private void expectationMaximization(List<Article> trainingSet)
     {
         Stopper.instance.Start();

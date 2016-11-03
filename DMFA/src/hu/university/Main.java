@@ -1,7 +1,10 @@
 package hu.university;
 
 import hu.university.datamining.*;
+import hu.university.io.ExpectationMaximizationIO;
 import hu.university.utilities.Stopper;
+
+import java.io.File;
 
 public class Main {
 
@@ -11,15 +14,15 @@ public class Main {
                 new SnowballStemmer(),
                 new MyDimensionReducer());
 
-
-        Stopper.instance.Start();
         LatentDirichletAllocation LDA = new LatentDirichletAllocation(corpus,2.0,2.0);
         LDA.Train2(100000);
-        Stopper.instance.Tick("LDA finished");
-        ExpectationMaximization em = new ExpectationMaximization(corpus,1,3000);
 
-        System.out.println(System.currentTimeMillis());
-        em.Train(1);
-        System.out.println(System.currentTimeMillis());
+        ExpectationMaximization em = new ExpectationMaximization(corpus,1,10000);
+        em.Train(2);
+
+        File termtopic = new File("termtopic1000.txt");
+        ExpectationMaximizationIO.SaveTermTopicMatrix(em, termtopic);
+        File allocations = new File("authorallocation1000.txt");
+        ExpectationMaximizationIO.SaveTopicAllocationWithText(em, allocations);
     }
 }
