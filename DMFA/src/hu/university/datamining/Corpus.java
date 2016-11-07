@@ -17,6 +17,8 @@ public class Corpus
     private Matrix termDocumentMatrix;
     private DimensionReducer dr;
     private Stemmer stemmer;
+    private static final int authorIndexInDocument = 0;
+    private static final int articleIndexInDocument = 1;
 
     //region Constructors and initialization
 
@@ -60,7 +62,7 @@ public class Corpus
 
                 line = line.toLowerCase().replaceAll("[^a-z\" ]", "");
                 String[] articleInfos = line.split("\"\"");
-                String articleContent = articleInfos[4].replaceAll("\"","").replaceAll("[ ]+", " ");
+                String articleContent = articleInfos[articleIndexInDocument].replaceAll("\"", "").replaceAll("[ ]+", " ");
 
                 String[] words = articleContent.split(" ");
                 words = dr.filterStopWords(words);
@@ -70,7 +72,7 @@ public class Corpus
                     sb.append(stemmer.stem(word)).append(' ');
                 }
 
-                Article article = new Article(articleInfos[5].replace("\"",""), sb.toString());
+                Article article = new Article(articleInfos[authorIndexInDocument].replace("\"", ""), sb.toString());
                 articles.add(article);
             }
             this.articles = dr.reduceWordDimension(articles);

@@ -43,18 +43,14 @@ public class ExpectationMaximizationIO
             int[] docToAuthor = em.GetDocumentToAuthorAllocation();
             Map<String,Integer> authorId = em.GetAuthorMapping();
             List<Article> articles = em.GetArticles();
-            int accurate = 0;
             for(int i = 0; i < articles.size(); i++)
             {
                 Article a = articles.get(i);
                 final int selectedAuthorId = docToAuthor[i];
                 String selectedAuthor = authorId.keySet().stream().filter(author -> authorId.get(author) == selectedAuthorId).findFirst().get();
-                if(selectedAuthor.compareTo(a.Author) == 0)
-                    accurate++;
                 br.write(a.Author + " " + selectedAuthor + "\n");
             }
             br.close();
-            System.out.println(accurate + "/" + articles.size());
         }
         catch (IOException e)
         {

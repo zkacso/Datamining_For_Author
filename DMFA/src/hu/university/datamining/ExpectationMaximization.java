@@ -99,20 +99,16 @@ public class ExpectationMaximization
 
     private void expectationMaximization(List<Article> trainingSet)
     {
-        Stopper.instance.Start();
         for(int i = 0; i < maximumIterations; i++)
         {
             expectation(trainingSet);
             maximization(corpus.GetArticles());
             System.out.println(i);
         }
-        Stopper.instance.ElapsedMiliseconds();
     }
 
     private double calculateLogProbability(List<Article> trainingSet)
     {
-
-        System.out.println("Log calculation started: " + System.currentTimeMillis());
         double modelProbability = 1.0;
         for(int j = 0; j < numTopics; j++)
         {
@@ -121,8 +117,6 @@ public class ExpectationMaximization
                 modelProbability *= Math.pow(termTopicMatrix.GetValue(t,j),alpha-1);
             }
         }
-        System.out.println("Model probability: " + modelProbability);
-        System.out.println("Log model probability: " + Math.log(modelProbability));
 
         double unlabeledLogProbability = 0.0;
         double labeledLogProbability = 0.0;

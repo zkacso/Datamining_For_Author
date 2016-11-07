@@ -3,7 +3,7 @@ package hu.university.datamining;
 import java.util.*;
 
 /**
- Created by Zoltán on 2016. 10. 24.. */
+ Created by Zoltï¿½n on 2016. 10. 24.. */
 public class MyDimensionReducer extends DimensionReducer
 {
  //region stopwords
@@ -754,9 +754,9 @@ public class MyDimensionReducer extends DimensionReducer
     @Override
     public List<Article> reduceWordDimension(List<Article> articles)
     {
-        double leastFrequentCutPercentage = 0.6;
+        double leastFrequentCutPercentage = 0.4;
         double MostFrequentCutPercentage = 0.01;
-        int MaxNumberOfWords = 5000;
+        int MaxNumberOfWords = 6000;
         HashMap<String, Integer> wordCount = new HashMap<>();
         for(Article a: articles)
         {
@@ -776,7 +776,7 @@ public class MyDimensionReducer extends DimensionReducer
         {
             StringBuilder sb = new StringBuilder();
             long articlesForAuthor = articles.stream().filter(art -> art.Author.compareTo(a.Author) == 0).count();
-            if(articlesForAuthor < 2)
+            if(articlesForAuthor < 15)
                 continue;
             for(String word: a.TextAsWords)
             {
