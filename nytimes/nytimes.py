@@ -18,7 +18,7 @@ for i in range(1,700):
     if debug:
         print(str(i) + '. page:')
     for page in range(0,20):
-        begindate = date(2015,2,14) + timedelta(days=i)
+        begindate = date(2015,6,1) + timedelta(days=i)
         print(begindate.strftime('%Y%m%d'))
         enddate = begindate
 
