@@ -1,7 +1,6 @@
 package hu.university.datamining;
 
 import hu.university.utilities.Matrix;
-import hu.university.utilities.Stopper;
 import hu.university.utilities.Utils;
 
 import java.util.*;
@@ -18,12 +17,11 @@ public class ExpectationMaximization
     private int[] Y;
     private Matrix termTopicMatrix;
     private double[] topicModel;
-    private final double alpha;
     private int maximumIterations;
 
-    public ExpectationMaximization(Corpus corpus, double alpha, int maximumIterations)
+    public ExpectationMaximization(Corpus corpus, int maximumIterations)
     {
-        this.authorIds = new HashMap<String, Integer>();
+        this.authorIds = new HashMap<>();
         this.corpus = corpus;
         this.numDocs = corpus.NumberOfArticles();
         this.maximumIterations = maximumIterations;
@@ -41,35 +39,36 @@ public class ExpectationMaximization
         }
         this.termTopicMatrix = new Matrix(numWords, numTopics);
         this.topicModel = new double[numTopics];
-        this.alpha = alpha;
     }
 
     public void Train(int numberOfTrainingArticlesPerTopic)
     {
-        List<Article> trainingSet =
-                new ArrayList<>();
-
-        System.out.println("Training set creation: " + System.currentTimeMillis());
-        for(int i = 0; i < numTopics; i++)
-        {
-            final int j = i; // fuck java
-            Object[] temp = corpus.GetArticles().stream()
-                    .filter(a -> authorIds.get(a.Author) == j)
-                    .toArray();
-            Article[] articles = Arrays.copyOf(temp,temp.length,Article[].class);
-            if(articles.length <= numberOfTrainingArticlesPerTopic)
-                trainingSet.addAll(Arrays.asList(articles));
-            else
-            {
-                trainingSet.addAll(Utils.pickNRandom(Arrays.asList(articles), numberOfTrainingArticlesPerTopic));
-            }
-        }
-        System.out.println("Training set created: " + System.currentTimeMillis());
+        List<Article> trainingSet = createTrainingSet(numberOfTrainingArticlesPerTopic);
 
         //Initialize model from training set in a semi-supervised fashion.
         maximization(trainingSet);
         expectationMaximization(trainingSet);
 
+    }
+
+    private List<Article> createTrainingSet(int numberOfArticlePerTopic)
+    {
+        List<Article> trainingSet = new ArrayList<>();
+        for(int i = 0; i < numTopics; i++)
+        {
+            final int j = i;
+            Object[] temp = corpus.GetArticles().stream()
+                .filter(a -> authorIds.get(a.Author) == j)
+                .toArray();
+            Article[] articles = Arrays.copyOf(temp,temp.length,Article[].class);
+            if(articles.length <= numberOfArticlePerTopic)
+                trainingSet.addAll(Arrays.asList(articles));
+            else
+            {
+                trainingSet.addAll(Utils.pickNRandom(Arrays.asList(articles), numberOfArticlePerTopic));
+            }
+        }
+        return trainingSet;
     }
 
     public Matrix GetTermTopicMatrix()
@@ -92,65 +91,14 @@ public class ExpectationMaximization
         return corpus.GetArticles();
     }
 
-    public double[] GetTopicModel()
-    {
-        return topicModel;
-    }
-
     private void expectationMaximization(List<Article> trainingSet)
     {
         for(int i = 0; i < maximumIterations; i++)
         {
             expectation(trainingSet);
             maximization(corpus.GetArticles());
-            System.out.println(i);
+            //System.out.println(i);
         }
-    }
-
-    private double calculateLogProbability(List<Article> trainingSet)
-    {
-        double modelProbability = 1.0;
-        for(int j = 0; j < numTopics; j++)
-        {
-            for(int t = 0; t < numWords; t++)
-            {
-                modelProbability *= Math.pow(termTopicMatrix.GetValue(t,j),alpha-1);
-            }
-        }
-
-        double unlabeledLogProbability = 0.0;
-        double labeledLogProbability = 0.0;
-        for(int i = 0; i < numDocs; i++)
-        {
-            Article a = corpus.GetArticle(i);
-            if(trainingSet.contains(a))
-            {
-                double prob = 1.0;
-                int topicId = authorIds.get(a.Author);
-                prob *= topicModel[topicId];
-                for(int t = 0; t < numWords; t++)
-                {
-                    prob *= Utils.pow(termTopicMatrix.GetValue(t, topicId),corpus.GetWordOccurrenceInDocument(t,i));
-                }
-                labeledLogProbability += Math.log(prob);
-            }
-            else
-            {
-                double prob = 0.0;
-                for(int j = 0; j < numTopics; j++)
-                {
-                    double prob2 = 1.0;
-                    prob2 *= topicModel[j];
-                    for(int t = 0; t < numWords; t++)
-                    {
-                        prob2 *= Utils.pow(termTopicMatrix.GetValue(t, j),corpus.GetWordOccurrenceInDocument(t,i));
-                    }
-                    prob += prob2;
-                }
-                unlabeledLogProbability += Math.log(prob);
-            }
-        }
-        return Math.log(modelProbability) + labeledLogProbability + unlabeledLogProbability;
     }
 
     private void expectation(List<Article> trainingSet)
@@ -199,7 +147,7 @@ public class ExpectationMaximization
                     .toArray();
             Article[] currentArticles = Arrays.copyOf(temp,temp.length,Article[].class);
 
-            // termTopic[i,j] == (1 + sum(wordOccurence in documents that are in the jth topic))/(numWords + sum(word occurence for each word in the documents that are in the jth topic)
+            // termTopic[i,j] == (1 + sum(wordOccurrence in documents that are in the jth topic))/(numWords + sum(word occurrence for each word in the documents that are in the jth topic)
             double termTopicDenominator = numWords;
             double[] termTopicReckoner = new double[numWords];
 
@@ -212,17 +160,7 @@ public class ExpectationMaximization
                     termTopicReckoner[wordIndex]++;
                 }
             }
-            //for(int s = 0; s < numWords; s++)
-            //{
-             //   termTopicReckoner[s] = 1;
-             //   for(Article a : currentArticles)
-             //   {
-             //       int articleIndex = corpus.GetArticleIndex(a);
-             //       int wordOccurrence = corpus.GetWordOccurrenceInDocument(s, articleIndex);
-             //       termTopicDenominator+= wordOccurrence;
-             //       termTopicReckoner[s] += wordOccurrence;
-             //   }
-            //}
+
             for(int t = 0; t < numWords; t++)
             {
                 termTopicMatrix.SetValue(t,j,(termTopicReckoner[t] + 1)/termTopicDenominator);

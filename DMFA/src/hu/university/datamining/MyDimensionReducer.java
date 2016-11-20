@@ -2,8 +2,6 @@ package hu.university.datamining;
 
 import java.util.*;
 
-/**
- Created by Zolt�n on 2016. 10. 24.. */
 public class MyDimensionReducer extends DimensionReducer
 {
  //region stopwords
@@ -738,6 +736,18 @@ public class MyDimensionReducer extends DimensionReducer
             "yours",
             "z");
  //endregion
+
+    private final double leastFrequentCutPercentage;
+    private final double mostFrequentCutPercentage;
+    private final int maxNumberOfWords;
+
+    public MyDimensionReducer(double leastFrequentCutPercentage, double mostFrequentCutPercentage, int maxNumberOfWords)
+    {
+        this.leastFrequentCutPercentage = leastFrequentCutPercentage;
+        this.mostFrequentCutPercentage = mostFrequentCutPercentage;
+        this.maxNumberOfWords = maxNumberOfWords;
+    }
+
     @Override
     public String[] filterStopWords(String[] words)
     {
@@ -754,20 +764,8 @@ public class MyDimensionReducer extends DimensionReducer
     @Override
     public List<Article> reduceWordDimension(List<Article> articles)
     {
-        double leastFrequentCutPercentage = 0.4;
-        double MostFrequentCutPercentage = 0.01;
-        int MaxNumberOfWords = 6000;
-        HashMap<String, Integer> wordCount = new HashMap<>();
-        for(Article a: articles)
-        {
-            for(String word : a.TextAsWords)
-            {
-                if(wordCount.containsKey(word))
-                    wordCount.replace(word,wordCount.get(word) + 1);
-                else
-                    wordCount.put(word,1);
-            }
-        }
+        HashMap<String, Integer> wordCount = calculateWordCount(articles);
+
         List<String> wordList = new ArrayList<>();
         wordList.addAll(wordCount.keySet());
         Collections.sort(wordList, (s1,s2) -> Integer.compare(wordCount.get(s1),wordCount.get(s2)));
@@ -782,16 +780,32 @@ public class MyDimensionReducer extends DimensionReducer
             {
                 int wordIdx = wordList.indexOf(word);
                 if(wordIdx < wordList.size()*leastFrequentCutPercentage ||
-                   wordIdx > wordList.size()*(1-MostFrequentCutPercentage) ||
-                   wordIdx < wordList.size()*(1-MostFrequentCutPercentage) - MaxNumberOfWords )
+                   wordIdx > wordList.size()*(1- mostFrequentCutPercentage) ||
+                   wordIdx < wordList.size()*(1- mostFrequentCutPercentage) - maxNumberOfWords)
                     continue;
-                else
-                    sb.append(word + " ");
+                sb.append(word);
+                sb.append(" ");
             }
             if(sb.toString().length() == 0)
                 throw new RuntimeException("Empty articles");
             reducedArticles.add(new Article(a.Author,sb.toString()));
         }
         return reducedArticles;
+    }
+
+    private static HashMap<String,Integer> calculateWordCount(List<Article> articles)
+    {
+        HashMap<String, Integer> wordCount = new HashMap<>();
+        for(Article a: articles)
+        {
+            for(String word : a.TextAsWords)
+            {
+                if(wordCount.containsKey(word))
+                    wordCount.replace(word,wordCount.get(word) + 1);
+                else
+                    wordCount.put(word,1);
+            }
+        }
+        return wordCount;
     }
 }

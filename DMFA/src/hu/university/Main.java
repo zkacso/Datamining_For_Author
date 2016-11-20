@@ -2,19 +2,40 @@ package hu.university;
 
 import hu.university.datamining.*;
 import hu.university.io.ExpectationMaximizationIO;
-import hu.university.utilities.Stopper;
+import hu.university.io.LatentDirichletAllocationIO;
 
 import java.io.File;
-import java.util.Arrays;
 
 public class Main {
     //^(.*) \1$
+    static Boolean useSemanticFields = false;
+    static double leastFrequentWordCutPercentage = 0.4;
+    static double mostFrequentWordCutPercentage = 0.01;
+    static int MaxNumberOfWords = 6000;
+    static int index = -1;
+    static int sizeOfTrainingSet = 10;
+    static final String outputfilePathBase = "C:\\GitRepository\\Datamining_For_Author\\results\\";
+    static final String normalFilePath = "C:\\GitRepository\\Datamining_For_Author\\nytimes\\nytimesarticles.csv";
+    static final String semanticFilePath = "C:\\GitRepository\\Datamining_For_Author\\semanticfields\\semanticArticles.csv";
+
     public static void main(String[] args) throws Exception
     {
-        Corpus corpus = new Corpus("C:\\GitRepository\\Datamining_For_Author\\nytimes\\nytimesarticles.csv",
-                new SnowballStemmer(),
-                new MyDimensionReducer());
+        ProcessCommandLineArguments(args);
+        if(index == -1)
+        {
+            System.out.println("Index number must be given. Use -ix");
+            return;
+        }
 
+        String dataFilePath = useSemanticFields ? semanticFilePath : normalFilePath;
+
+        Corpus corpus = new Corpus(dataFilePath,
+                new SnowballStemmer(),
+                new MyDimensionReducer(leastFrequentWordCutPercentage,
+                                       mostFrequentWordCutPercentage,
+                                       MaxNumberOfWords));
+
+        /**
         Object[] asd = corpus.GetArticles().stream().map(a -> a.Author).distinct().toArray();
         String[] authors = Arrays.copyOf(asd,asd.length,String[].class);
 
@@ -25,16 +46,70 @@ public class Main {
         }
 
         System.in.read();
+        */
 
         LatentDirichletAllocation LDA = new LatentDirichletAllocation(corpus,2.0,2.0);
-        LDA.Train2(100000);
+        LDA.Train(10000);
 
-        ExpectationMaximization em = new ExpectationMaximization(corpus,1,10000);
-        em.Train(10);
+        ExpectationMaximization em = new ExpectationMaximization(corpus,10000);
+        em.Train(sizeOfTrainingSet);
 
-        File termtopic = new File("termtopic_5_10k.txt");
+
+
+        File termtopic = new File(getFilePath("em_termtopic"));
         ExpectationMaximizationIO.SaveTermTopicMatrix(em, termtopic);
-        File allocations = new File("authorallocation_5_10k.txt");
+        File allocations = new File(getFilePath("em_authorallocation"));
         ExpectationMaximizationIO.SaveTopicAllocationWithText(em, allocations);
+
+        File ldaFile = new File(getFilePath("lda_authorallocation"));
+        LatentDirichletAllocationIO.SaveToFile(LDA,ldaFile);
+    }
+
+    private static void ProcessCommandLineArguments(String[] args)
+    {
+        for(int i =0; i < args.length; i++)
+        {
+            String arg = args[i];
+            if(arg.equals("-semanticFields"))
+                useSemanticFields = true;
+            else if(arg.equals("-lowCut"))
+            {
+                leastFrequentWordCutPercentage = Double.parseDouble(args[i + 1]);
+                i++;
+            }
+            else if(arg.equals("-highCut"))
+            {
+                mostFrequentWordCutPercentage = Double.parseDouble(args[i + 1]);
+                i++;
+            }
+            else if(arg.equals("-maxWords"))
+            {
+                MaxNumberOfWords = Integer.parseInt(args[i + 1]);
+                i++;
+            }
+            else if(arg.equals("-ix"))
+            {
+                index = Integer.parseInt(args[i + 1]);
+                i++;
+            }
+            else if(arg.equals("-trainingSetSize"))
+            {
+                sizeOfTrainingSet = Integer.parseInt(args[i+1]);
+                i++;
+            }
+        }
+    }
+
+    private static String getFilePath(String theme)
+    {
+
+        return outputfilePathBase +
+            theme + "_" +
+            (useSemanticFields ? "sem" : "norm") + "_" +
+            sizeOfTrainingSet + "_" +
+            (int)(leastFrequentWordCutPercentage*100) + "_" +
+            (int)(mostFrequentWordCutPercentage*100) + "_" +
+            MaxNumberOfWords+ "_"+
+            index + ".txt";
     }
 }

@@ -1,5 +1,7 @@
 package hu.university.datamining;
 
+import blogspot.software_and_algorithms.stern_library.optimization.HungarianAlgorithm;
+
 import java.util.*;
 
 /**
@@ -9,7 +11,6 @@ public class LatentDirichletAllocation
     private Corpus corpus;
     private int numTopics;
     private int numDocs;
-    private int numOfWords;
     private HashMap<String, int[]> wordTopicCount;
     private List<int[]> docWordToTopic;
     private int[][] docToTopicCount;
@@ -17,6 +18,11 @@ public class LatentDirichletAllocation
     private double alpha;
     private double lambda;
 
+
+    public List<Article> getArticles()
+    {
+        return corpus.GetArticles();
+    }
 
     //public LatentDirichletAllocation(Corpus corpus, double[] alphas, double[] lambdas)
     //{
@@ -44,8 +50,6 @@ public class LatentDirichletAllocation
         this.lambda = lambdas;
 
         Set<String> words = corpus.GetWordSet();
-        this.numOfWords = words.size();
-
         for(String word : words)
         {
             wordTopicCount.put(word, new int[numTopics]);
@@ -58,31 +62,14 @@ public class LatentDirichletAllocation
         }
     }
 
-    //private void init(Corpus corpus, double alpha, double lambda)
-    //{
-    //    double[] alphas = new double[numDocs];
-    //    double[] lambdas = new double[numTopics];
-//
-//        for(int i = 0; i < numDocs; i++)
-//        {
-//            alphas[i] = alpha;
-//        }
-//        for(int i = 0; i < numTopics; i++)
-//        {
-//            lambdas[i] = lambda;
-//        }
-//
-//        init(corpus, alphas, lambdas);
-//    }
-
     //Latent dirichlet algorithm using gibbl sampling.
-    public void Train2(int numOfIterations)
+    public void Train(int numOfIterations)
     {
         //Initialize topicword allocation
         initializeDocWordToTopicMapping();
-        int curriteration = 0;
+        int currIteration = 0;
         int currDocumentIndex = 0;
-        while(curriteration < numOfIterations)
+        while(currIteration < numOfIterations)
         {
             if(currDocumentIndex == numDocs)
                 currDocumentIndex = 0;
@@ -95,32 +82,16 @@ public class LatentDirichletAllocation
                 assignWordOfDocumentToTopic(currDocumentIndex, wordIndex, newTopicIndex);
             }
             currDocumentIndex++;
-            curriteration += numWordsInDocument;
+            currIteration += numWordsInDocument;
         }
     }
 
     private int generateNewTopic(int currDocumentIndex, int wordIndex)
     {
-        double[] wordTopicProportions = new double[numTopics];
+        double[] wordTopicProportions = calculateWordToTopicProportions(currDocumentIndex,wordIndex);
         double sumOfWordTopicProportions = 0;
-        String word = corpus.GetWordOfArticle(currDocumentIndex, wordIndex);
-        for(int topicIdx = 0; topicIdx < numTopics; topicIdx++)
-        {
-            double docTopic = (docToTopicCount[currDocumentIndex][topicIdx] + alpha)
-                    / (corpus.GetArticleLength(currDocumentIndex) + alpha*numTopics);
-
-            double wordTopic = (wordTopicCount.get(word)[topicIdx] + lambda);
-            double sum = 0;
-            for(int k = 0;k < numTopics; k++)
-            {
-                sum+= wordTopicCount.get(word)[topicIdx];
-            }
-            sum += numTopics * lambda;
-            wordTopic /= sum;
-
-            wordTopicProportions[topicIdx] = docTopic * wordTopic;
-            sumOfWordTopicProportions += wordTopicProportions[topicIdx];
-        }
+        for(double p: wordTopicProportions)
+            sumOfWordTopicProportions += p;
         Random r = new Random();
         double random = r.nextDouble() * sumOfWordTopicProportions;
         for(int i = 0; i < numTopics; i++)
@@ -133,19 +104,55 @@ public class LatentDirichletAllocation
         return numTopics - 1;
     }
 
+    private double[] calculateWordToTopicProportions(int documentIndex, int wordIndex)
+    {
+        double[] wordTopicProportions = new double[numTopics];
+        String word = corpus.GetWordOfArticle(documentIndex, wordIndex);
+        for(int topicIdx = 0; topicIdx < numTopics; topicIdx++)
+        {
+            double docTopic = documentToTopicProbability(documentIndex,topicIdx);
+
+            double wordTopic = (wordTopicCount.get(word)[topicIdx] + lambda);
+            double sum = 0;
+            for(int k = 0;k < numTopics; k++)
+            {
+                sum+= wordTopicCount.get(word)[topicIdx];
+            }
+            sum += numTopics * lambda;
+            wordTopic /= sum;
+
+            wordTopicProportions[topicIdx] = docTopic * wordTopic;
+        }
+        return wordTopicProportions;
+    }
+
+    private double documentToTopicProbability(int documentIndex, int topicIdx)
+    {
+        return (docToTopicCount[documentIndex][topicIdx] + alpha)
+            / (corpus.GetArticleLength(documentIndex) + alpha*numTopics);
+    }
+
+    public double[] documentToTopicProbabilities(int documentIndex)
+    {
+        double[] probabilities = new double[numTopics];
+        for(int topicIdx = 0; topicIdx < numTopics; topicIdx++)
+            probabilities[topicIdx] = documentToTopicProbability(documentIndex,topicIdx);
+        return probabilities;
+    }
+
     private void initializeDocWordToTopicMapping()
     {
         Random r = new Random();
 
         //Initialize corpus with random topic allocation
         initializing = true;
-        for(int docix = 0; docix < numDocs; docix++ )
+        for(int docIx = 0; docIx < numDocs; docIx++ )
         {
-            int wordNum = docWordToTopic.get(docix).length;
-            for(int wordix = 0; wordix < wordNum; wordix++)
+            int wordNum = docWordToTopic.get(docIx).length;
+            for(int wordIx = 0; wordIx < wordNum; wordIx++)
             {
                 int newTopicIdx = r.nextInt(numTopics);
-                assignWordOfDocumentToTopic(docix, wordix, newTopicIdx);
+                assignWordOfDocumentToTopic(docIx, wordIx, newTopicIdx);
             }
         }
         initializing = false;
@@ -153,17 +160,17 @@ public class LatentDirichletAllocation
 
     private void assignWordOfDocumentToTopic(int documentIdx, int wordIdx, int newTopicIdx)
     {
-        String docword = corpus.GetWordOfArticle(documentIdx, wordIdx);
-        int[] docwords = docWordToTopic.get(documentIdx);
-        int oldtopicIdx = docwords[wordIdx];
-        docwords[wordIdx] = newTopicIdx;
-        int[] wordTopicCount = this.wordTopicCount.get(docword);
+        String docWord = corpus.GetWordOfArticle(documentIdx, wordIdx);
+        int[] docWords = docWordToTopic.get(documentIdx);
+        int oldTopicIdx = docWords[wordIdx];
+        docWords[wordIdx] = newTopicIdx;
+        int[] wordTopicCount = this.wordTopicCount.get(docWord);
         //Decrease old topic count, except when initializing.
-        if(!initializing && oldtopicIdx != -1)
+        if(!initializing && oldTopicIdx != -1)
         {
-            wordTopicCount[oldtopicIdx]--;
-            docToTopicCount[documentIdx][oldtopicIdx]--;
-            if(wordTopicCount[oldtopicIdx] < 0 || docToTopicCount[documentIdx][oldtopicIdx] < 0)
+            wordTopicCount[oldTopicIdx]--;
+            docToTopicCount[documentIdx][oldTopicIdx]--;
+            if(wordTopicCount[oldTopicIdx] < 0 || docToTopicCount[documentIdx][oldTopicIdx] < 0)
                 throw new RuntimeException("Something wrong");
         }
         //Increase new topic count.
@@ -173,29 +180,78 @@ public class LatentDirichletAllocation
 
     private void unassignWordOfDocument(int documentIdx, int wordIdx)
     {
-        int[] docwords = docWordToTopic.get(documentIdx);
-        int oldtopicIdx = docwords[wordIdx];
-        docwords[wordIdx] = -1;
+        int[] docWords = docWordToTopic.get(documentIdx);
+        int oldTopicIdx = docWords[wordIdx];
+        docWords[wordIdx] = -1;
         //Decrease old topic count, except when initializing.
-        if(oldtopicIdx == -1)
+        if(oldTopicIdx == -1)
         {
             String docword = corpus.GetWordOfArticle(documentIdx, wordIdx);
             int[] wordTopicCount = this.wordTopicCount.get(docword);
-            wordTopicCount[oldtopicIdx]--;
-            docToTopicCount[documentIdx][oldtopicIdx]--;
-            if(wordTopicCount[oldtopicIdx] < 0 || docToTopicCount[documentIdx][oldtopicIdx] < 0)
+            wordTopicCount[oldTopicIdx]--;
+            docToTopicCount[documentIdx][oldTopicIdx]--;
+            if(wordTopicCount[oldTopicIdx] < 0 || docToTopicCount[documentIdx][oldTopicIdx] < 0)
                 throw new RuntimeException("Something wrong");
         }
     }
-
 
     public int numDocs()
     {
         return numDocs;
     }
 
-    public long numTopics()
+    public int[] getDocumentToTopicIndexes()
     {
-        return numTopics;
+        int[] docToTopicIx = new int[numDocs];
+        for(int docIdx = 0; docIdx < numDocs; docIdx++)
+        {
+            ArrayList<Integer> topicIndexes = new ArrayList<>();
+            for(int t = 0; t < numTopics; t++)
+                topicIndexes.add(t);
+            final double[] docToTopic = documentToTopicProbabilities(docIdx);
+            topicIndexes.sort((t1, t2) -> Double.compare(docToTopic[t2],docToTopic[t1]));
+            docToTopicIx[docIdx] = topicIndexes.get(0);
+        }
+        return docToTopicIx;
+    }
+
+    public String[] getDocumentToAuthorMapping()
+    {
+
+        int[] topicToAuthorIx = getTopicToAuthorIxMapping();
+        ArrayList<String> authors = new ArrayList<>(corpus.GetAuthors());
+        int[] docToTopicIndexes = getDocumentToTopicIndexes();
+
+        String[] documentToAuthorAllocation = new String[numDocs];
+        for(int docIdx = 0; docIdx < numDocs; docIdx++)
+        {
+            documentToAuthorAllocation[docIdx] = authors.get(topicToAuthorIx[docToTopicIndexes[docIdx]]);
+        }
+        return documentToAuthorAllocation;
+    }
+
+    public int[] getTopicToAuthorIxMapping()
+    {
+        int[] docToTopicIndexes = getDocumentToTopicIndexes();
+        double[][] costMatrix = new double[numTopics][numTopics];
+        ArrayList<String> authors = new ArrayList<>(corpus.GetAuthors());
+        double maxVal = 0;
+
+        // Count the authors in each created topic
+        for(int docIx = 0; docIx < numDocs; docIx++)
+        {
+            Article article = corpus.GetArticle(docIx);
+            costMatrix[docToTopicIndexes[docIx] ][authors.indexOf(article.Author)]++;
+            if(maxVal < costMatrix[docToTopicIndexes[docIx] ][authors.indexOf(article.Author)])
+                maxVal = costMatrix[docToTopicIndexes[docIx] ][authors.indexOf(article.Author)];
+        }
+
+        // Hungarian algorithm calculates the minimal allocation, but we need the maximal so substract each value from max value
+        for(int i = 0; i < numTopics; i++)
+            for(int j = 0; j < numTopics; j++)
+                costMatrix[i][j] = maxVal - costMatrix[i][j];
+
+        HungarianAlgorithm alg = new HungarianAlgorithm(costMatrix);
+        return alg.execute();
     }
 }

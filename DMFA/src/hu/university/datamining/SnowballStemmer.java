@@ -1,6 +1,5 @@
 package hu.university.datamining;
 
-import org.tartarus.snowball.ext.englishStemmer;
 
 /**
  Created by Zoltán on 2016. 10. 24.. */

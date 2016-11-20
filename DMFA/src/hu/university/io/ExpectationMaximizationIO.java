@@ -20,10 +20,12 @@ public class ExpectationMaximizationIO
             BufferedWriter br = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(output)));
             for(int i = 0; i < m.GetRowSize(); i++)
             {
-                for (int j = 0; j < m.GetColumnSize(); j++)
+                br.write("\"");
+                for (int j = 0; j < m.GetColumnSize()-1; j++)
                 {
-                    br.write(m.GetValue(i,j) + " ");
+                    br.write(m.GetValue(i,j) + "\";\"");
                 }
+                br.write(m.GetValue(i,m.GetColumnSize()-1) + "\"");
                 br.write('\n');
             }
             br.close();
@@ -41,14 +43,13 @@ public class ExpectationMaximizationIO
         {
             BufferedWriter br = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(output)));
             int[] docToAuthor = em.GetDocumentToAuthorAllocation();
-            Map<String,Integer> authorId = em.GetAuthorMapping();
+            Map<String,Integer> authorIds = em.GetAuthorMapping();
             List<Article> articles = em.GetArticles();
             for(int i = 0; i < articles.size(); i++)
             {
                 Article a = articles.get(i);
-                final int selectedAuthorId = docToAuthor[i];
-                String selectedAuthor = authorId.keySet().stream().filter(author -> authorId.get(author) == selectedAuthorId).findFirst().get();
-                br.write(a.Author + " " + selectedAuthor + "\n");
+                String selectedAuthor = getAuthor(authorIds, docToAuthor[i]);
+                br.write("\""+a.Author + "\";\"" + selectedAuthor + "\"\n");
             }
             br.close();
         }
@@ -56,6 +57,11 @@ public class ExpectationMaximizationIO
         {
             e.printStackTrace();
         }
+    }
+
+    private static String getAuthor(Map<String, Integer> authorIds, int selectedAuthorId)
+    {
+        return authorIds.keySet().stream().filter(author -> authorIds.get(author) == selectedAuthorId).findFirst().get();
     }
 
     public static void SaveTopicAllocationWithIds(ExpectationMaximization em,File output)
@@ -70,7 +76,7 @@ public class ExpectationMaximizationIO
             {
                 Article a = articles.get(i);
                 int selectedAuthorId = docToAuthor[i];
-                br.write(authorId.get(a.Author) + " " + selectedAuthorId + '\n');
+                br.write("\"" + authorId.get(a.Author) + "\";\"" + selectedAuthorId + "\"\n");
             }
             br.close();
         }

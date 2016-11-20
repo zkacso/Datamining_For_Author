@@ -1,19 +1,18 @@
 package hu.university.datamining;
 
 import hu.university.utilities.Matrix;
-import hu.university.utilities.MatrixEx;
 
 import java.io.*;
 import java.util.*;
 
 public class Corpus
 {
-    private List<Article> articles = new ArrayList<Article>();
+    private List<Article> articles = new ArrayList<>();
     /**
      * Key = words in the corpus
      * Value = the index of the word in the term-document matrix.
      */
-    private HashMap<String, Integer> wordMap = new HashMap<String, Integer>();
+    private HashMap<String, Integer> wordMap = new HashMap<>();
     private Matrix termDocumentMatrix;
     private DimensionReducer dr;
     private Stemmer stemmer;
@@ -82,7 +81,9 @@ public class Corpus
             throw e;
         }
         catch (IOException e)
-        {}
+        {
+            System.err.println("Couldn't read from file.");
+        }
         finally
         {
             if(br != null)
@@ -91,7 +92,9 @@ public class Corpus
                     br.close();
                 }
                 catch (IOException e)
-                {}
+                {
+                    System.err.println("Couldn't close file handler");
+                }
         }
     }
 
@@ -161,24 +164,14 @@ public class Corpus
         return articles.get(index);
     }
 
-    public Article GetArticleById(int ID)
+    public Set<String> GetAuthors()
     {
+        HashSet<String> authors = new HashSet<>();
         for(Article a : articles)
         {
-            if(a.ID == ID)
-                return a;
+            authors.add(a.Author);
         }
-        throw new IndexOutOfBoundsException();
-    }
-
-    public int GetArticleIndex(Article a)
-    {
-        for(int i = 0; i < articles.size(); i++)
-        {
-            if(articles.get(i).ID == a.ID)
-                return i;
-        }
-        throw new IndexOutOfBoundsException();
+        return authors;
     }
 
     public String GetWordOfArticle(int articleIndex, int wordIndex)
