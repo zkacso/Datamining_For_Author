@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="DMFA:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/DMFA_jar</output-path>
+    <root id="archive" name="DMFA.jar">
+      <element id="module-output" name="DMFA" />
+    </root>
+  </artifact>
+</component>
