@@ -20,6 +20,7 @@ public class Main {
 
     public static void main(String[] args) throws Exception
     {
+        System.out.println("Started");
         ProcessCommandLineArguments(args);
         if(index == -1)
         {
@@ -110,6 +111,6 @@ public class Main {
             (int)(leastFrequentWordCutPercentage*100) + "_" +
             (int)(mostFrequentWordCutPercentage*100) + "_" +
             MaxNumberOfWords+ "_"+
-            index + ".txt";
+            index + ".csv";
     }
 }
