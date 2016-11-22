@@ -20,7 +20,6 @@ public class Main {
 
     public static void main(String[] args) throws Exception
     {
-        System.out.println("Started");
         ProcessCommandLineArguments(args);
         if(index == -1)
         {
@@ -50,7 +49,7 @@ public class Main {
         */
 
         LatentDirichletAllocation LDA = new LatentDirichletAllocation(corpus,2.0,2.0);
-        LDA.Train(10000);
+        LDA.Train(50000);
 
         ExpectationMaximization em = new ExpectationMaximization(corpus,10000);
         em.Train(sizeOfTrainingSet);
