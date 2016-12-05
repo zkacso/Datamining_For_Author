@@ -774,7 +774,7 @@ public class MyDimensionReducer extends DimensionReducer
         {
             StringBuilder sb = new StringBuilder();
             long articlesForAuthor = articles.stream().filter(art -> art.Author.compareTo(a.Author) == 0).count();
-            if(articlesForAuthor < 15)
+            if(articlesForAuthor < 2)
                 continue;
             for(String word: a.TextAsWords)
             {
