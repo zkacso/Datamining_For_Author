@@ -14,17 +14,17 @@ public class Corpus
      */
     private HashMap<String, Integer> wordMap = new HashMap<>();
     private Matrix termDocumentMatrix;
-    private DimensionReducer dr;
+    private DimensionReducer dimensionReducer;
     private Stemmer stemmer;
     private static final int authorIndexInDocument = 0;
     private static final int articleIndexInDocument = 1;
 
     //region Constructors and initialization
 
-    public Corpus(String filePath, Stemmer st, DimensionReducer dr) throws FileNotFoundException
+    public Corpus(String filePath, Stemmer st, DimensionReducer dimensionReducer) throws FileNotFoundException
     {
         this.stemmer = st;
-        this.dr = dr;
+        this.dimensionReducer = dimensionReducer;
         initializeFromFile(filePath);
     }
 
@@ -59,22 +59,10 @@ public class Corpus
                 if(line == null)
                     break;
 
-                line = line.toLowerCase().replaceAll("[^a-z\" ]", "");
-                String[] articleInfos = line.split("\"\"");
-                String articleContent = articleInfos[articleIndexInDocument].replaceAll("\"", "").replaceAll("[ ]+", " ");
-
-                String[] words = articleContent.split(" ");
-                words = dr.filterStopWords(words);
-                StringBuilder sb = new StringBuilder();
-                for(String word : words)
-                {
-                    sb.append(stemmer.stem(word)).append(' ');
-                }
-
-                Article article = new Article(articleInfos[authorIndexInDocument].replace("\"", ""), sb.toString());
+                Article article = createArticleFromFileLine(line);
                 articles.add(article);
             }
-            this.articles = dr.reduceWordDimension(articles);
+            this.articles = dimensionReducer.reduceWordDimension(articles);
         }
         catch (FileNotFoundException e)
         {
@@ -98,11 +86,29 @@ public class Corpus
         }
     }
 
+    private Article createArticleFromFileLine(String line)
+    {
+        line = line.toLowerCase().replaceAll("[^a-z\" ]", "");
+        String[] articleInfos = line.split("\"\"");
+        String articleContent = articleInfos[articleIndexInDocument].replaceAll("\"", "").replaceAll("[ ]+", " ");
+
+        String[] words = articleContent.split(" ");
+        words = dimensionReducer.filterStopWords(words);
+        StringBuilder sb = new StringBuilder();
+        for(String word : words)
+        {
+            sb.append(stemmer.stem(word)).append(' ');
+        }
+
+        Article article = new Article(articleInfos[authorIndexInDocument].replace("\"", ""), sb.toString());
+        return article;
+    }
+
     private void initializeWordMap(List<Article> articles)
     {
         for(Article article : articles)
         {
-            String[] words = article.Text.split(" ");
+            String[] words = article.TextAsWords;
             for(String word : words)
             {
                 if(wordMap.containsKey(word))
@@ -116,13 +122,13 @@ public class Corpus
     private  void initializeTermDocumentMatrix(List<Article> articles, Map<String, Integer> wordMap)
     {
         termDocumentMatrix = new Matrix(wordMap.size(), articles.size());
-        for(int i = 0; i < articles.size(); i++)
+        for(int articleIdx = 0; articleIdx < articles.size(); articleIdx++)
         {
-            Article article = articles.get(i);
-            for(String word : article.Text.split(" "))
+            Article article = articles.get(articleIdx);
+            for(String word : article.TextAsWords)
             {
                 int termIndex = wordMap.get(word);
-                termDocumentMatrix.Increment(termIndex, i);
+                termDocumentMatrix.Increment(termIndex, articleIdx);
             }
         }
     }

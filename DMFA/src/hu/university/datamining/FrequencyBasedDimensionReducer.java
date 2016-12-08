@@ -2,7 +2,7 @@ package hu.university.datamining;
 
 import java.util.*;
 
-public class MyDimensionReducer extends DimensionReducer
+public class FrequencyBasedDimensionReducer extends DimensionReducer
 {
  //region stopwords
     private List<String> stopWords = Arrays.asList("another",
@@ -741,7 +741,7 @@ public class MyDimensionReducer extends DimensionReducer
     private final double mostFrequentCutPercentage;
     private final int maxNumberOfWords;
 
-    public MyDimensionReducer(double leastFrequentCutPercentage, double mostFrequentCutPercentage, int maxNumberOfWords)
+    public FrequencyBasedDimensionReducer(double leastFrequentCutPercentage, double mostFrequentCutPercentage, int maxNumberOfWords)
     {
         this.leastFrequentCutPercentage = leastFrequentCutPercentage;
         this.mostFrequentCutPercentage = mostFrequentCutPercentage;
@@ -769,6 +769,7 @@ public class MyDimensionReducer extends DimensionReducer
         List<String> wordList = new ArrayList<>();
         wordList.addAll(wordCount.keySet());
         Collections.sort(wordList, (s1,s2) -> Integer.compare(wordCount.get(s1),wordCount.get(s2)));
+
         List<Article> reducedArticles = new ArrayList<>();
         for(Article a: articles)
         {

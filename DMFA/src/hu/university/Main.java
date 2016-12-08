@@ -34,7 +34,7 @@ public class Main {
 
         Corpus corpus = new Corpus(dataFilePath,
                 new SnowballStemmer(),
-                new MyDimensionReducer(leastFrequentWordCutPercentage,
+                new FrequencyBasedDimensionReducer(leastFrequentWordCutPercentage,
                                        mostFrequentWordCutPercentage,
                                        MaxNumberOfWords));
 
@@ -51,33 +51,33 @@ public class Main {
         System.in.read();
         */
 
-        //LatentDirichletAllocation LDA = new LatentDirichletAllocation(corpus,2.0,2.0);
-        //LDA.Train(50000);
+        LatentDirichletAllocation LDA = new LatentDirichletAllocation(corpus,2.0,2.0);
+        LDA.Train(50000);
 
-        //ExpectationMaximization em = new ExpectationMaximization(corpus,10000);
-        //em.Train(sizeOfTrainingSet);
+        ExpectationMaximization em = new ExpectationMaximization(corpus,10000);
+        em.Train(sizeOfTrainingSet);
 
-        //NaiveBayes nb = new NaiveBayes(corpus);
-        //nb.Train(sizeOfTrainingSet);
+        NaiveBayes nb = new NaiveBayes(corpus);
+        nb.Train(sizeOfTrainingSet);
 
 
-        //File termtopic = new File(getFilePath("em_termtopic"));
-        //ExpectationMaximizationIO.SaveTermTopicMatrix(em, termtopic);
-        //File allocations = new File(getFilePath("em_authorallocation"));
-        //ExpectationMaximizationIO.SaveTopicAllocationWithText(em, allocations);
+        File termtopic = new File(getFilePath("em_termtopic"));
+        ExpectationMaximizationIO.SaveTermTopicMatrix(em, termtopic);
+        File allocations = new File(getFilePath("em_authorallocation"));
+        ExpectationMaximizationIO.SaveTopicAllocationWithText(em, allocations);
 
-        //File nb_termtopic = new File(getFilePath("nb_termtopic"));
-        //NaiveBayesIO.SaveTermTopicMatrix(nb, nb_termtopic);
-        //File nb_allocations = new File(getFilePath("nb_authorallocation"));
-        //NaiveBayesIO.SaveTopicAllocationWithText(nb, nb_allocations);
+        File nb_termtopic = new File(getFilePath("nb_termtopic"));
+        NaiveBayesIO.SaveTermTopicMatrix(nb, nb_termtopic);
+        File nb_allocations = new File(getFilePath("nb_authorallocation"));
+        NaiveBayesIO.SaveTopicAllocationWithText(nb, nb_allocations);
 
         File wordMapFile = new File(getFilePath("wordmap"));
-        CorpusIO.SaveWordmapping(corpus,wordMapFile);
+        CorpusIO.SaveWordMapping(corpus, wordMapFile);
         File authorIds = new File(getFilePath("authorIds"));
         CorpusIO.SaveAuthorIds(corpus,authorIds);
 
-        //File ldaFile = new File(getFilePath("lda_authorallocation"));
-        //LatentDirichletAllocationIO.SaveToFile(LDA,ldaFile);
+        File ldaFile = new File(getFilePath("lda_authorallocation"));
+        LatentDirichletAllocationIO.SaveToFile(LDA,ldaFile);
     }
 
     private static void ProcessCommandLineArguments(String[] args)
@@ -117,7 +117,6 @@ public class Main {
 
     private static String getFilePath(String theme)
     {
-
         return outputfilePathBase +
             theme + "_" +
             (useSemanticFields ? "sem" : "norm") + "_" +
