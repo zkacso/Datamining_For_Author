@@ -63,20 +63,20 @@ public class LatentDirichletAllocation
         int currIteration = 0;
         int currDocumentIndex = 0;
         while(currIteration < numOfIterations)
-        {
-            if(currDocumentIndex == numDocs)
-                currDocumentIndex = 0;
+    {
+        if(currDocumentIndex == numDocs)
+            currDocumentIndex = 0;
 
-            int numberOfWordsInDocument = documentWordsToTopicAssignment.get(currDocumentIndex).length;
-            for(int wordIndex = 0; wordIndex < numberOfWordsInDocument; wordIndex++)
-            {
-                unassignWordOfDocument(currDocumentIndex, wordIndex);
-                int newTopicIndex = generateNewTopic(currDocumentIndex, wordIndex);
-                assignWordOfDocumentToTopic(currDocumentIndex, wordIndex, newTopicIndex);
-            }
-            currDocumentIndex++;
-            currIteration += numberOfWordsInDocument;
+        int numberOfWordsInDocument = documentWordsToTopicAssignment.get(currDocumentIndex).length;
+        for(int wordIndex = 0; wordIndex < numberOfWordsInDocument; wordIndex++)
+        {
+            unassignWordOfDocument(currDocumentIndex, wordIndex);
+            int newTopicIndex = generateNewTopic(currDocumentIndex, wordIndex);
+            assignWordOfDocumentToTopic(currDocumentIndex, wordIndex, newTopicIndex);
         }
+        currDocumentIndex++;
+        currIteration += numberOfWordsInDocument;
+    }
     }
 
     private int generateNewTopic(int currDocumentIndex, int wordIndex)

@@ -23,7 +23,7 @@ public class Main {
     public static void main(String[] args) throws Exception
     {
         ProcessCommandLineArguments(args);
-
+        index = 1;
         if(index == -1)
         {
             System.out.println("Index number must be given. Use -ix");
@@ -34,10 +34,8 @@ public class Main {
 
         Corpus corpus = new Corpus(dataFilePath,
                 new SnowballStemmer(),
-                new FrequencyBasedDimensionReducer(leastFrequentWordCutPercentage,
-                                       mostFrequentWordCutPercentage,
-                                       MaxNumberOfWords));
-
+                new FrequencyBasedDimensionReducer(0.0,0.0,50000));
+        System.out.println(corpus.GetWordSet().size());
         /**
         Object[] asd = corpus.GetArticles().stream().map(a -> a.Author).distinct().toArray();
         String[] authors = Arrays.copyOf(asd,asd.length,String[].class);
@@ -51,7 +49,7 @@ public class Main {
         System.in.read();
         */
 
-        LatentDirichletAllocation LDA = new LatentDirichletAllocation(corpus,2.0,2.0);
+        /*LatentDirichletAllocation LDA = new LatentDirichletAllocation(corpus,2.0,2.0);
         LDA.Train(50000);
 
         ExpectationMaximization em = new ExpectationMaximization(corpus,10000);
@@ -77,7 +75,7 @@ public class Main {
         CorpusIO.SaveAuthorIds(corpus,authorIds);
 
         File ldaFile = new File(getFilePath("lda_authorallocation"));
-        LatentDirichletAllocationIO.SaveToFile(LDA,ldaFile);
+        LatentDirichletAllocationIO.SaveToFile(LDA,ldaFile);*/
     }
 
     private static void ProcessCommandLineArguments(String[] args)

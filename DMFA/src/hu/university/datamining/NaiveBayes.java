@@ -90,6 +90,7 @@ public class NaiveBayes
     {
         for(int i = 0; i < numDocs; i++)
         {
+            //If labeled document use its label
             Article a = corpus.GetArticle(i);
             //Labeled document
             if(trainingSet.contains(a))
